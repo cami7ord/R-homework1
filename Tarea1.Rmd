@@ -1,8 +1,7 @@
 ---
 title: "Homework #1"
-author: "Camilo Baquero Jimenez"
+author: "Camilo Baquero Jimenez - c.baquero10@uniandes.edu.co"
 date: "7/2/2017"
-email: "c.baquero10@uniandes.edu.co"
 output: html_document
 ---
 
@@ -22,6 +21,51 @@ write.csv <- function(ob, filename){
   write.table(ob, filename, quote=FALSE, sep=",", row.names=FALSE)
 }
 ```
+
+```{r data, cache = TRUE, echo=FALSE}
+##############################
+#prepare data for PCA analysis
+##############################
+mydata <-import.csv('SP500_close_price.csv')
+date <- as.Date(as.character(mydata[, 1]), format="%Y-%m-%d")
+myzoo <- zoo(mydata[,-1], date )
+myzoo <- na.locf(myzoo) #impute missing values
+prices2returns <- function(x) 100*diff(log(x)) #function to covert from price to return
+log.return.zoo <- prices2returns(myzoo)
+log.return.data <- coredata(log.return.zoo) #data
+log.return.date <- time(log.return.zoo) #date
+```
+
+## Problem 1
+
+Apply Principal Component Analysis to stock market index data.
+
+#### a) Fit a PCA model to log returns derived from stock price data:
+
+```{r princomp}
+pca.model <- princomp(log.return.data)
+```
+
+##### 1. Scree plot of the distribution of variance
+
+```{r 1a}
+plot(pca.model)
+```
+
+##### 2. Cumulative percentage of variance retained
+
+```{r 1b}
+
+pcaCPV <- function(x) {
+    x.var <- x$sdev ^ 2
+    x.pvar <- x.var/sum(x.var)
+    plot(cumsum(x.pvar),xlab="Principal component",ylab="Cumulative percentage of variance",ylim=c(0,1),type='b')
+}
+
+pcaCPV(pca.model)
+
+```
+
 
 ## R Markdown
 
