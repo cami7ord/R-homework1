@@ -12,6 +12,7 @@ library("zoo")
 library("plyr")
 library("MASS")
 library("leaps")
+library("dplyr")
 
 import.csv <- function(filename){
   return(read.csv(filename,sep="," ,header=TRUE))
@@ -34,6 +35,9 @@ prices2returns <- function(x) 100*diff(log(x)) #function to covert from price to
 log.return.zoo <- prices2returns(myzoo)
 log.return.data <- coredata(log.return.zoo) #data
 log.return.date <- time(log.return.zoo) #date
+##############################
+#prepare industry sector data
+sectors <- import.csv('SP500_ticker.csv')
 ```
 
 ## Problem 1
@@ -48,13 +52,13 @@ pca.model <- princomp(log.return.data)
 
 ##### 1. Scree plot of the distribution of variance
 
-```{r 1a}
+```{r a1}
 plot(pca.model)
 ```
 
 ##### 2. Cumulative percentage of variance retained
 
-```{r 1b}
+```{r a2}
 pcaCPV <- function(x) {
     x.var <- x$sdev ^ 2
     x.pvar <- x.var/sum(x.var)
@@ -78,29 +82,62 @@ summary(pca.model)
 ## Cumulative Proportion    0.6618857  0.8042544
 ```
 
+&nbsp;
 
 ##### 4. Magnitude of the estimated reconstruction error
 
 If we only retain the top two of the PCA components, the magnitude of the estimated reconstruction error is:
-
+&nbsp;
 $$100\%*\left(1- \frac{\sum_{l=3}^{471} \lambda_l}{\sum_{i=1}^{471} \lambda_i} \right)=19.57456\%$$
 
-## R Markdown
+&nbsp;
+&nbsp;
+&nbsp;
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+#### b) Analysis of principal components and weights:
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+##### 1. Time series of the 1st principal component
 
-```{r cars}
-summary(cars)
+```{r b1}
+principalcomponent <- zoo(pca.model$scores[, 1], log.return.date)
+autoplot.zoo(principalcomponent)
 ```
 
-## Including Plots
+##### 2. Weights from PCA principal two components
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r b2, message=FALSE, warning=FALSE}
+pca.weights <- pca.model$loadings[,1:2]
+summary(pca.weights)
+biplot(pca.model)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+##### 3. Principal component 1 grouped by industry sector
+
+```{r b3, echo=FALSE, warning=FALSE, message=FALSE}
+ticker <- rownames(pca.weights)
+comp1 <- pca.weights[,1]
+comp2 <- pca.weights[,2]
+
+w1 <- data.frame(ticker, comp1, comp2)
+sectors <- data.frame(lapply(sectors, trimws))
+weight1 <- inner_join(sectors, w1)
+
+#out <- weight1 %>% group_by(sector) %>% summarize(comp1 = mean(comp1), comp2 = mean(comp2))
+out <- weight1 %>% group_by(sector) %>% summarize(comp1 = mean(comp1))
+str(out)
+#barplot(out)
+
+levels(weight1$sector)
+```
+
+##### 4. Principal component 2 grouped by industry sector
+
+```{r b4, echo=FALSE, warning=FALSE, message=FALSE}
+
+out2 <- weight1 %>% group_by(sector) %>% summarize(comp2 = mean(comp2))
+#barplot(out2)
+```
+
+##### 5. New stock index using one principal component to track the overall market tendencies
+
+Applications/RStudio.app/Contents/MacOS/pandoc/pandoc +RTS -K512m -RTS Tarea1.utf8.md --to html --from markdown+autolink_bare_uris+ascii_identifiers+tex_math_single_backslash --output Tarea1.html --smart --email-obfuscation none --self-contained --standalone --section-divs
