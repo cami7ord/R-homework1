@@ -55,7 +55,6 @@ plot(pca.model)
 ##### 2. Cumulative percentage of variance retained
 
 ```{r 1b}
-
 pcaCPV <- function(x) {
     x.var <- x$sdev ^ 2
     x.pvar <- x.var/sum(x.var)
@@ -63,9 +62,28 @@ pcaCPV <- function(x) {
 }
 
 pcaCPV(pca.model)
-
 ```
 
+##### 3. Principal components retained
+
+In order to capture at least 80% of the total variance in data, the top two PCA components must be retained.
+
+```
+summary(pca.model)
+
+## Importance of components:
+##                             Comp.1     Comp.2
+## Standard deviation     105.9339978 49.1304919
+## Proportion of Variance   0.6618857  0.1423687
+## Cumulative Proportion    0.6618857  0.8042544
+```
+
+
+##### 4. Magnitude of the estimated reconstruction error
+
+If we only retain the top two of the PCA components, the magnitude of the estimated reconstruction error is:
+
+$$100\%*\left(1- \frac{\sum_{l=3}^{471} \lambda_l}{\sum_{i=1}^{471} \lambda_i} \right)=19.57456\%$$
 
 ## R Markdown
 
