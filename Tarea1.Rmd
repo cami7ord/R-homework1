@@ -111,7 +111,7 @@ summary(pca.weights)
 biplot(pca.model)
 ```
 
-##### 3. Principal component 1 grouped by industry sector
+##### 3. Principal component 1 mean weight grouped by industry sector
 
 ```{r b3, echo=FALSE, warning=FALSE, message=FALSE}
 ticker <- rownames(pca.weights)
@@ -123,19 +123,18 @@ sectors <- data.frame(lapply(sectors, trimws))
 weight1 <- inner_join(sectors, w1)
 
 #out <- weight1 %>% group_by(sector) %>% summarize(comp1 = mean(comp1), comp2 = mean(comp2))
-out <- weight1 %>% group_by(sector) %>% summarize(comp1 = mean(comp1))
-str(out)
-#barplot(out)
+out1 <- weight1 %>% group_by(sector) %>% summarize(comp1 = mean(comp1))
+plot(out1)
 
 levels(weight1$sector)
 ```
 
-##### 4. Principal component 2 grouped by industry sector
+##### 4. Principal component 2 mean weight grouped by industry sector
 
 ```{r b4, echo=FALSE, warning=FALSE, message=FALSE}
 
 out2 <- weight1 %>% group_by(sector) %>% summarize(comp2 = mean(comp2))
-#barplot(out2)
+plot(out2)
 ```
 
 ##### 5. New stock index using one principal component to track the overall market tendencies
